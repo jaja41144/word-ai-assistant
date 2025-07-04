@@ -20,13 +20,19 @@
     "prettier": "office-addin-lint prettier",
     "signin": "office-addin-dev-settings m365-account login",
     "signout": "office-addin-dev-settings m365-account logout",
-    "start": "office-addin-debugging start manifest.xml",
+    "start": "node server.js",
+    "dev": "office-addin-debugging start manifest.xml",
     "stop": "office-addin-debugging stop manifest.xml",
     "validate": "office-addin-manifest validate manifest.xml",
     "watch": "webpack --mode development --watch"
   },
   "dependencies": {
+    "@pinecone-database/pinecone": "^6.1.1",
     "core-js": "^3.36.0",
+    "dotenv": "^17.0.1",
+    "express": "^5.1.0",
+    "follow-redirects": "^1.15.9",
+    "openai": "^5.8.2",
     "regenerator-runtime": "^0.14.1"
   },
   "devDependencies": {
