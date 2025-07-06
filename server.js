@@ -52,6 +52,8 @@ app.post("/ask", async (req, res) => {
     await downloadTextFile(url, tempPath);
     const text = fs.readFileSync(tempPath, "utf-8");
     const chunks = chunkText(text);
+    console.log("Using OpenAI key starting with:", process.env.OPENAI_API_KEY.slice(0, 10));
+
 
     // Step 2: Embed and upsert to Pinecone
     for (let i = 0; i < chunks.length; i++) {
@@ -87,7 +89,7 @@ app.post("/ask", async (req, res) => {
     const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
-        { role: "system", content: "You are a helpful academic assistant. Only use the provided context." },
+        { role: "system", content: "You are a helpful academic assistant. Format all responses in valid Markdown (e.g., use headings, lists, bold, etc.). Only use the provided context." },
         { role: "user", content: `Context:\n${context}\n\nQuestion: ${query}` },
       ],
     });

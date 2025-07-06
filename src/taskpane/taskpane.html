@@ -1,38 +1,35 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. -->
-<!-- This file shows how to design a first-run page that provides a welcome screen to the user about the features of the add-in. -->
-
 <!DOCTYPE html>
 <html>
-
 <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Contoso Task Pane Add-in</title>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thesis Mentor AI</title>
 
-    <!-- Office JavaScript API -->
-    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <!-- Office.js API -->
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
 
-    <!-- For more information on Fluent UI, visit https://developer.microsoft.com/fluentui#/. -->
-    <link rel="stylesheet" href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.1.0/css/fabric.min.css"/>
+  <!-- Fluent UI Styles -->
+  <link rel="stylesheet" href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.1.0/css/fabric.min.css"/>
 
-    <!-- Template styles -->
-    <link href="taskpane.css" rel="stylesheet" type="text/css" />
+  <!-- Custom Styles -->
+  <link href="taskpane.css" rel="stylesheet" />
 </head>
 <body>
-    <h2>Word AI Assistant</h2>
+  <h2>Thesis Mentor AI</h2>
 
-    <label for="prompt"><strong>Your Question:</strong></label>
-    <textarea id="prompt" placeholder="Ask the AI something..." rows="6" style="width:100%;"></textarea>
+  <label for="prompt"><strong>Your Question:</strong></label>
+  <textarea id="prompt" rows="6" placeholder="Ask the AI something..." style="width: 100%;"></textarea>
 
-    <div style="margin-top: 10px;">
-        <button id="submitBtn" onclick="sendPrompt()">Submit</button>
-<button id="selectionBtn" onclick="sendPromptWithSelection()">Ask About Selected Text</button>
-    </div>
+  <div style="margin-top: 10px;">
+    <button id="submitBtn" onclick="sendPrompt()">Submit</button>
+    <button id="selectionBtn" onclick="sendPromptWithSelection()">Ask About Selected Text</button>
+    <button onclick="clearLog()">Clear Log</button>
+  </div>
 
-    <p style="margin-top: 20px;"><strong>Response:</strong></p>
-    <div id="response" style="white-space: pre-wrap; background: #f3f3f3; padding: 10px; border: 1px solid #ccc; min-height: 100px;"></div>
-    <script src="taskpane.js"></script>
+  <p style="margin-top: 20px;"><strong>Conversation Log:</strong></p>
+  <div id="responseLog" style="white-space: pre-wrap; background: #f3f3f3; padding: 10px; border: 1px solid #ccc; height: 300px; overflow-y: auto;"></div>
+
+  <script src="taskpane.js"></script>
 </body>
-
 </html>

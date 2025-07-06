@@ -77,7 +77,11 @@ function replaceLastLog(role, message) {
   const lastBubble = bubbles[bubbles.length - 1];
 
   if (lastBubble) {
-    lastBubble.textContent = message;
+    if (role === "AI") {
+      lastBubble.innerHTML = marked.parse(message); // Render markdown as HTML
+    } else {
+      lastBubble.textContent = message; // Keep plain text for user input
+    }
   }
 }
 
