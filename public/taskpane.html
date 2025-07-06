@@ -1,26 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Thesis Mentor AI</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="taskpane.css" rel="stylesheet" type="text/css" />
+
+  <!-- Office.js API -->
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+
+  <!-- Fluent UI Styles -->
+  <link rel="stylesheet" href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.1.0/css/fabric.min.css"/>
+
+  <!-- Custom Styles -->
+  <link href="taskpane.css" rel="stylesheet" />
 </head>
-<body>
-  <h2>Thesis Mentor AI</h2>
-
-  <label for="questionInput">Your Question:</label>
-  <textarea id="questionInput" rows="4" placeholder="Ask something about academic writing..."></textarea>
-
-  <div>
-    <button id="submitBtn">Submit</button>
-    <button id="askSelectionBtn">Ask About Selected Text</button>
-    <button id="clearBtn">Clear Log</button>
+<body class="ms-Fabric" style="padding: 20px; font-family: 'Segoe UI', sans-serif;">
+  <div class="ms-welcome__header">
+    <h2>Thesis Mentor AI</h2>
   </div>
 
-  <label style="margin-top: 16px;">Conversation Log:</label>
-  <div id="conversationLog"></div>
+  <div class="ms-welcome__main">
+    <label for="prompt"><strong>Your Question:</strong></label>
+    <textarea id="prompt" rows="6" placeholder="Ask the AI something..." style="width: 100%; border-radius: 6px; border: 1px solid #ccc; padding: 10px; font-size: 14px;"></textarea>
+
+    <div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
+      <button class="ms-Button ms-Button--hero" id="submitBtn" onclick="sendPrompt()">
+        <span class="ms-Button-label">Submit</span>
+      </button>
+      <button class="ms-Button ms-Button--hero" id="selectionBtn" onclick="sendPromptWithSelection()">
+        <span class="ms-Button-label">Ask About Selected Text</span>
+      </button>
+      <button class="ms-Button ms-Button--hero" onclick="clearLog()">
+        <span class="ms-Button-label">Clear Log</span>
+      </button>
+    </div>
+
+    <p style="margin-top: 20px;"><strong>Conversation Log:</strong></p>
+    <div id="responseLog" style="white-space: pre-wrap; background: #fafafa; padding: 12px; border: 1px solid #ccc; height: 300px; overflow-y: auto; border-radius: 6px; font-size: 14px;"></div>
+  </div>
 
   <script src="taskpane.js"></script>
 </body>
 </html>
+
