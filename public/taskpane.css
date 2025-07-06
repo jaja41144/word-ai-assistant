@@ -1,87 +1,104 @@
-/* Base layout */
 html,
 body {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 16px;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f9f9f9;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #fff;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
-/* Header */
+* {
+  box-sizing: inherit;
+}
+
 h2 {
-    font-size: 1.5rem;
-    color: #323130;
-    margin-bottom: 12px;
+  text-align: center;
+  margin: 16px 0;
+  font-size: 20px;
 }
 
-/* Labels */
-label {
-    font-weight: 600;
-    display: block;
-    margin-bottom: 6px;
-    color: #201f1e;
-}
-
-/* Textarea */
 textarea {
-    width: 100%;
-    padding: 10px;
-    font-size: 14px;
-    border: 1px solid #c8c6c4;
-    border-radius: 6px;
-    resize: vertical;
-    margin-bottom: 12px;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+  width: 100%;
+  font-family: inherit;
+  font-size: 14px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  resize: vertical;
 }
 
-/* Button group */
 button {
-    padding: 8px 16px;
-    margin-right: 8px;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    background-color: #0078d4;
-    color: white;
-    transition: background-color 0.2s ease;
+  background-color: #2e7d32;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  margin-right: 8px;
+  margin-top: 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
 }
 
 button:hover {
-    background-color: #005a9e;
+  background-color: #1b5e20;
 }
 
-button:last-child {
-    margin-right: 0;
+#responseLog {
+  background: #f9f9f9;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  height: 320px;
+  overflow-y: auto;
+  margin-top: 20px;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* Conversation Log */
-#conversationLog {
-    background-color: #ffffff;
-    border: 1px solid #edebe9;
-    padding: 10px;
-    height: 250px;
-    overflow-y: auto;
-    border-radius: 6px;
-    margin-top: 12px;
-    font-size: 14px;
-    line-height: 1.5;
+.message-entry {
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
-/* Message Formatting */
+.message-meta {
+  font-size: 0.75em;
+  color: #444;
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.timestamp {
+  font-style: italic;
+  color: #888;
+  font-size: 0.75em;
+  margin-left: 6px;
+}
+
 .message {
-    margin-bottom: 12px;
+  padding: 8px 12px;
+  background-color: #dcfce7; /* Light green */
+  border-radius: 12px;
+  max-width: 75%;
+  display: inline-block;       /* shrink bubble to fit text */
+  text-align: left;            /* align text to left */
+  word-wrap: break-word;
+}
+.message.user {
+  background-color: #dcfce7;
+  align-self: flex-start;
 }
 
-.message .user {
-    font-weight: 600;
-    color: #0078d4;
+.message.ai {
+  background-color: #f3f4f6;
+  align-self: flex-end;
 }
 
-.message .ai {
-    color: #201f1e;
-}

@@ -13,6 +13,8 @@ async function sendPrompt() {
     body: JSON.stringify({ query: prompt })
   });
 
+  document.getElementById("prompt").value = "";
+
   const data = await response.json();
   replaceLastLog("AI", data.answer || "No answer returned.");
 }
@@ -40,6 +42,8 @@ async function sendPromptWithSelection() {
       body: JSON.stringify({ query: `${prompt}\n\nSelected Text:\n${selectedText}` })
     });
 
+    document.getElementById("prompt").value = "";
+
     const data = await response.json();
     replaceLastLog("AI", data.answer || "No answer returned.");
   });
@@ -47,15 +51,20 @@ async function sendPromptWithSelection() {
 
 function appendToLog(role, message) {
   const log = document.getElementById("responseLog");
+  const cssRole = role === "You" ? "user" : "ai";
+  const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   const entry = document.createElement("div");
-  entry.style.marginBottom = "12px";
-  entry.className = "log-entry";
+  entry.className = "message-entry";
 
-  entry.innerHTML = `
-    <div><strong>${role}:</strong></div>
-    <div>${escapeHtml(message)}</div>
-  `;
+entry.innerHTML = `
+  <div class="message-meta">
+    <b>${role}</b> <span class="timestamp">${timestamp}</span>
+  </div>
+  <div class="message ${cssRole}">
+    ${escapeHtml(message)}
+  </div>
+`;
 
   log.appendChild(entry);
   log.scrollTop = log.scrollHeight;
@@ -63,12 +72,12 @@ function appendToLog(role, message) {
 
 function replaceLastLog(role, message) {
   const log = document.getElementById("responseLog");
-  const lastEntry = log.querySelector(".log-entry:last-child");
-  if (lastEntry) {
-    lastEntry.innerHTML = `
-      <div><strong>${role}:</strong></div>
-      <div>${escapeHtml(message)}</div>
-    `;
+  const cssRole = role === "You" ? "user" : "ai";
+  const bubbles = log.getElementsByClassName(`message ${cssRole}`);
+  const lastBubble = bubbles[bubbles.length - 1];
+
+  if (lastBubble) {
+    lastBubble.textContent = message;
   }
 }
 
@@ -88,3 +97,11 @@ function escapeHtml(text) {
     return escapeMap[match];
   });
 }
+
+document.getElementById("prompt").addEventListener("keydown", function (event) {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault(); // Prevent newline
+    sendPrompt(); // Trigger your send function
+    document.getElementById("prompt").value = "";
+  }
+});

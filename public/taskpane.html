@@ -26,7 +26,7 @@
 
     <div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
       <button class="ms-Button ms-Button--hero" id="submitBtn" onclick="sendPrompt()">
-        <span class="ms-Button-label">Submit</span>
+        <span class="ms-Button-label">Ask</span>
       </button>
       <button class="ms-Button ms-Button--hero" id="selectionBtn" onclick="sendPromptWithSelection()">
         <span class="ms-Button-label">Ask About Selected Text</span>
@@ -37,7 +37,7 @@
     </div>
 
     <p style="margin-top: 20px;"><strong>Conversation Log:</strong></p>
-    <div id="responseLog" style="white-space: pre-wrap; background: #fafafa; padding: 12px; border: 1px solid #ccc; height: 300px; overflow-y: auto; border-radius: 6px; font-size: 14px;"></div>
+    <div id="responseLog" class="chat-log"></div>
   </div>
 
   <script src="taskpane.js"></script>
