@@ -1,3 +1,51 @@
+Office.onReady((info) => {
+  if (info.host === Office.HostType.Word) {
+    console.log("Office.js is ready");
+
+    // Word-dependent function
+    async function sendPromptWithSelection() {
+      await Word.run(async (context) => {
+        const selection = context.document.getSelection();
+        selection.load("text");
+        await context.sync();
+
+        const selectedText = selection.text.trim();
+        const prompt = document.getElementById("prompt").value.trim();
+
+        if (!selectedText) return alert("Please select some text.");
+        if (!prompt) return alert("Please enter a question.");
+
+        appendToLog("You", `${prompt}\n\n(Selected Text: ${selectedText})`);
+        appendToLog("AI", "Thinking...");
+
+        const response = await fetch("https://word-rag-backend.onrender.com/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: `${prompt}\n\nSelected Text:\n${selectedText}` })
+        });
+
+        document.getElementById("prompt").value = "";
+
+        const data = await response.json();
+        replaceLastLog("AI", data.answer || "No answer returned.");
+      });
+    }
+
+    // Attach keydown inside Office.onReady
+    document.getElementById("prompt").addEventListener("keydown", function (event) {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault(); // Prevent newline
+        sendPrompt();
+        document.getElementById("prompt").value = "";
+      }
+    });
+
+    // Expose it if needed elsewhere
+    window.sendPromptWithSelection = sendPromptWithSelection;
+  }
+});
+
+// Non-Office logic
 async function sendPrompt() {
   const prompt = document.getElementById("prompt").value.trim();
   if (!prompt) return alert("Please enter a question.");
@@ -7,9 +55,7 @@ async function sendPrompt() {
 
   const response = await fetch("https://word-rag-backend.onrender.com/ask", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query: prompt })
   });
 
@@ -17,36 +63,6 @@ async function sendPrompt() {
 
   const data = await response.json();
   replaceLastLog("AI", data.answer || "No answer returned.");
-}
-
-async function sendPromptWithSelection() {
-  await Word.run(async (context) => {
-    const selection = context.document.getSelection();
-    selection.load("text");
-    await context.sync();
-
-    const selectedText = selection.text.trim();
-    const prompt = document.getElementById("prompt").value.trim();
-
-    if (!selectedText) return alert("Please select some text.");
-    if (!prompt) return alert("Please enter a question.");
-
-    appendToLog("You", `${prompt}\n\n(Selected Text: ${selectedText})`);
-    appendToLog("AI", "Thinking...");
-
-    const response = await fetch("https://word-rag-backend.onrender.com/ask", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ query: `${prompt}\n\nSelected Text:\n${selectedText}` })
-    });
-
-    document.getElementById("prompt").value = "";
-
-    const data = await response.json();
-    replaceLastLog("AI", data.answer || "No answer returned.");
-  });
 }
 
 function appendToLog(role, message) {
@@ -57,14 +73,14 @@ function appendToLog(role, message) {
   const entry = document.createElement("div");
   entry.className = "message-entry";
 
-entry.innerHTML = `
-  <div class="message-meta">
-    <b>${role}</b> <span class="timestamp">${timestamp}</span>
-  </div>
-  <div class="message ${cssRole}">
-    ${escapeHtml(message)}
-  </div>
-`;
+  entry.innerHTML = `
+    <div class="message-meta">
+      <b>${role}</b> <span class="timestamp">${timestamp}</span>
+    </div>
+    <div class="message ${cssRole}">
+      ${escapeHtml(message)}
+    </div>
+  `;
 
   log.appendChild(entry);
   log.scrollTop = log.scrollHeight;
@@ -78,9 +94,9 @@ function replaceLastLog(role, message) {
 
   if (lastBubble) {
     if (role === "AI") {
-      lastBubble.innerHTML = marked.parse(message); // Render markdown as HTML
+      lastBubble.innerHTML = marked.parse(message); // Render markdown
     } else {
-      lastBubble.textContent = message; // Keep plain text for user input
+      lastBubble.textContent = message;
     }
   }
 }
@@ -101,11 +117,3 @@ function escapeHtml(text) {
     return escapeMap[match];
   });
 }
-
-document.getElementById("prompt").addEventListener("keydown", function (event) {
-  if (event.key === "Enter" && !event.shiftKey) {
-    event.preventDefault(); // Prevent newline
-    sendPrompt(); // Trigger your send function
-    document.getElementById("prompt").value = "";
-  }
-});
