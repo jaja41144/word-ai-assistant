@@ -43,30 +43,40 @@ function chunkText(text, maxWords = 150) {
 app.post("/ask", async (req, res) => {
   const { query } = req.body;
 
-  const fileId = "1gVSijN61kcX3JJwnQewKZljrZuweN71Y"; // your Google Doc file ID
-  const url = `https://docs.google.com/document/d/${fileId}/export?format=txt`;
-  const tempPath = path.join(__dirname, "temp.txt");
+  const fileIds = [
+    "1gVSijN61kcX3JJwnQewKZljrZuweN71Y",
+    "1T9VogNrgRws9S5G-otX0x8NvLnUVJhlV", // Add more as needed
+  ];
 
   try {
-    // Step 1: Download and chunk
-    await downloadTextFile(url, tempPath);
-    const text = fs.readFileSync(tempPath, "utf-8");
-    const chunks = chunkText(text);
+    let allChunks = [];
+
+    // Step 1: Download and chunk all files
+    for (const fileId of fileIds) {
+      const url = `https://docs.google.com/document/d/${fileId}/export?format=txt`;
+      const tempPath = path.join(__dirname, `temp_${fileId}.txt`);
+
+      await downloadTextFile(url, tempPath);
+      const text = fs.readFileSync(tempPath, "utf-8");
+      const chunks = chunkText(text);
+
+      allChunks.push(...chunks);
+    }
+
     console.log("Using OpenAI key starting with:", process.env.OPENAI_API_KEY.slice(0, 10));
 
-
-    // Step 2: Embed and upsert to Pinecone
-    for (let i = 0; i < chunks.length; i++) {
+    // Step 2: Embed and upsert all chunks
+    for (let i = 0; i < allChunks.length; i++) {
       const embedding = await openai.embeddings.create({
         model: "text-embedding-ada-002",
-        input: chunks[i],
+        input: allChunks[i],
       });
 
       await index.upsert([
         {
           id: String(i + 1),
           values: embedding.data[0].embedding,
-          metadata: { text: chunks[i] },
+          metadata: { text: allChunks[i] },
         },
       ]);
     }
@@ -83,14 +93,21 @@ app.post("/ask", async (req, res) => {
       includeMetadata: true,
     });
 
-    const context = results.matches.map(m => m.metadata.text).join("\n");
+    const context = results.matches.map((m) => m.metadata.text).join("\n");
 
     // Step 4: Get answer from GPT
     const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
-        { role: "system", content: "You are an academic study supervisor. Use the provided context to help postgraduate students develop their research work. Respond with academic clarity, referencing the relevant material where applicable. Adapt your feedback to the question asked — offering explanations, guidance, or suggestions as appropriate. Maintain a neutral and professional tone. Avoid personal language and do not rewrite the student's work. Do not speculate beyond the context provided. Format all responses that require headings, lists, bold, etc. in valid Markdown. Only use the provided context." },
-        { role: "user", content: `Context:\n${context}\n\nQuestion: ${query}` },
+        {
+          role: "system",
+          content:
+            "You are an academic study supervisor. Use the provided context to help postgraduate students develop their research work. Respond with academic clarity, referencing the relevant material where applicable. Adapt your feedback to the question asked — offering explanations, guidance, or suggestions as appropriate. Maintain a neutral and professional tone. Avoid personal language and do not rewrite the student's work. Do not speculate beyond the context provided. Format all responses that require headings, lists, bold, etc. in valid Markdown. Only use the provided context.",
+        },
+        {
+          role: "user",
+          content: `Context:\n${context}\n\nQuestion: ${query}`,
+        },
       ],
     });
 
