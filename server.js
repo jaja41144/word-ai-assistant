@@ -43,35 +43,47 @@ function chunkText(text, maxWords = 150) {
 app.post("/ask", async (req, res) => {
   const { query } = req.body;
 
-  const fileId = "1gVSijN61kcX3JJwnQewKZljrZuweN71Y"; // your Google Doc file ID
-  const url = `https://docs.google.com/document/d/${fileId}/export?format=txt`;
-  const tempPath = path.join(__dirname, "temp.txt");
+  // 🔐 Hardcoded list of Google Doc file IDs
+  const fileIds = [
+    "1gVSijN61kcX3JJwnQewKZljrZuweN71Y", // Doc 1
+    "1T9VogNrgRws9S5G-otX0x8NvLnUVJhlV"        // Doc 2 (replace with actual ID)
+  ];
 
   try {
-    // Step 1: Download and chunk
-    await downloadTextFile(url, tempPath);
-    const text = fs.readFileSync(tempPath, "utf-8");
-    const chunks = chunkText(text);
-    console.log("Using OpenAI key starting with:", process.env.OPENAI_API_KEY.slice(0, 10));
+    let allChunks = [];
 
+    // Step 1: Download, chunk, embed, and upsert each document
+    for (const fileId of fileIds) {
+      const url = `https://docs.google.com/document/d/${fileId}/export?format=txt`;
+      const tempPath = path.join(__dirname, `${fileId}.txt`);
 
-    // Step 2: Embed and upsert to Pinecone
-    for (let i = 0; i < chunks.length; i++) {
-      const embedding = await openai.embeddings.create({
-        model: "text-embedding-ada-002",
-        input: chunks[i],
-      });
+      await downloadTextFile(url, tempPath);
+      const text = fs.readFileSync(tempPath, "utf-8");
+      const chunks = chunkText(text);
 
-      await index.upsert([
-        {
-          id: String(i + 1),
-          values: embedding.data[0].embedding,
-          metadata: { text: chunks[i] },
-        },
-      ]);
+      for (let i = 0; i < chunks.length; i++) {
+        const embedding = await openai.embeddings.create({
+          model: "text-embedding-ada-002",
+          input: chunks[i],
+        });
+
+        await index.upsert([
+          {
+            id: `${fileId}-${i + 1}`,
+            values: embedding.data[0].embedding,
+            metadata: {
+              text: chunks[i],
+              docId: fileId
+            },
+          },
+        ]);
+      }
+
+      // Store chunks for later context use
+      allChunks.push(...chunks);
     }
 
-    // Step 3: Embed query and retrieve context
+    // Step 2: Embed query and search across all documents
     const queryEmbedding = await openai.embeddings.create({
       model: "text-embedding-ada-002",
       input: query,
@@ -81,29 +93,33 @@ app.post("/ask", async (req, res) => {
       topK: 5,
       vector: queryEmbedding.data[0].embedding,
       includeMetadata: true,
+      filter: {
+        docId: { "$in": fileIds } // restrict search to your hardcoded docs
+      }
     });
 
     const context = results.matches.map(m => m.metadata.text).join("\n");
 
-    // Step 4: Get answer from GPT
+    // Step 3: Generate GPT-4 answer
     const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
-        { role: "system", content: "You are an academic study supervisor. Use the provided context to help postgraduate students develop their research work. Respond with academic clarity, referencing the relevant material where applicable. Adapt your feedback to the question asked — offering explanations, guidance, or suggestions as appropriate. Maintain a neutral and professional tone. Avoid personal language and do not rewrite the student's work. Do not speculate beyond the context provided. Format all responses that require headings, lists, bold, etc. in valid Markdown. Only use the provided context." },
-        { role: "user", content: `Context:\n${context}\n\nQuestion: ${query}` },
+        {
+          role: "system",
+          content: "You are an academic study supervisor. Use the provided context to help postgraduate students develop their research work. Respond with academic clarity, referencing the relevant material where applicable. Adapt your feedback to the question asked — offering explanations, guidance, or suggestions as appropriate. Maintain a neutral and professional tone. Avoid personal language and do not rewrite the student's work. Do not speculate beyond the context provided. Format all responses that require headings, lists, bold, etc. in valid Markdown. Only use the provided context."
+        },
+        {
+          role: "user",
+          content: `Context:\n${context}\n\nQuestion: ${query}`
+        },
       ],
     });
 
     res.json({ answer: completion.choices[0].message.content });
+
   } catch (err) {
     console.error("❌ Error:", err);
     res.status(500).json({ error: "Internal server error." });
   }
 });
 
-// === Start Server ===
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-});
